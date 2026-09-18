@@ -14,6 +14,10 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from urllib.request import Request, urlopen
 
+
+def ffmpeg_path(path: Path) -> str:
+    return path.resolve().as_posix().replace("'", "'\\''")
+
 STYLE_PRESETS = {
     "auto": {
         "label": "Auto Faceless",
@@ -707,8 +711,10 @@ def render_video(
                 str(clip_path),
             ]
         )
+        if not clip_path.exists() or clip_path.stat().st_size == 0:
+            raise RuntimeError(f"FFmpeg did not create clip: {clip_path}")
         clip_paths.append(clip_path)
-        concat_lines.append(f"file '{clip_path.as_posix()}'")
+        concat_lines.append(f"file '{ffmpeg_path(clip_path)}'")
 
     concat_file = project / "frames.txt"
     concat_file.write_text("\n".join(concat_lines), encoding="utf-8")
@@ -725,8 +731,14 @@ def render_video(
             "0",
             "-i",
             str(concat_file),
-            "-c",
-            "copy",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "veryfast",
+            "-crf",
+            "20",
+            "-pix_fmt",
+            "yuv420p",
             str(silent_video),
         ]
     )
