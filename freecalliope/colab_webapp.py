@@ -58,44 +58,49 @@ def generate_video(
     omnivoice_audio_path: str,
     gemini_api_key: str,
 ) -> tuple[str, str | None, str | None, str | None, str, str, str]:
-    topic = topic.strip()
-    if not topic:
-        raise gr.Error("Add a topic first.")
-    if voice_provider == "omnivoice" and not omnivoice_audio_path.strip():
-        raise gr.Error("OmniVoice mode needs an audio file path, like /content/omnivoice_output.wav.")
+    try:
+        topic = topic.strip()
+        if not topic:
+            raise gr.Error("Add a topic first.")
+        if voice_provider == "omnivoice" and not omnivoice_audio_path.strip():
+            raise gr.Error("OmniVoice mode needs an audio file path, like /content/omnivoice_output.wav.")
 
-    width, height = video_size(platform)
-    result = run_pipeline(
-        topic=topic,
-        style=style,
-        platform=platform,
-        generation_mode=generation_mode,
-        minutes=minutes,
-        scene_count=scene_count,
-        gemini_key=gemini_api_key or None,
-        image_model=image_model,
-        width=width,
-        height=height,
-        steps=steps,
-        guidance_scale=0.0,
-        voice_provider=voice_provider,
-        edge_voice=edge_voice,
-        omnivoice_audio_path=omnivoice_audio_path.strip() or None,
-    )
+        width, height = video_size(platform)
+        result = run_pipeline(
+            topic=topic,
+            style=style,
+            platform=platform,
+            generation_mode=generation_mode,
+            minutes=minutes,
+            scene_count=scene_count,
+            gemini_key=gemini_api_key or None,
+            image_model=image_model,
+            width=width,
+            height=height,
+            steps=steps,
+            guidance_scale=0.0,
+            voice_provider=voice_provider,
+            edge_voice=edge_voice,
+            omnivoice_audio_path=omnivoice_audio_path.strip() or None,
+        )
 
-    project = Path(result["project_dir"])
-    video_path = result.get("video_path")
-    zip_path = result.get("zip_path")
-    thumbnail_path = project / "thumbnails" / "thumbnail.jpg"
-    script = read_text(project / "script.txt")
-    storyboard = read_text(project / "storyboard.md")
-    metadata = read_text(project / "metadata.json", json.dumps(result.get("metadata", {}), indent=2))
-    status = (
-        f"Generated `{result['style']}` video for `{platform}`.\n\n"
-        f"Video: `{video_path}`\n\n"
-        f"Zip: `{zip_path}`"
-    )
-    return status, video_path, zip_path, str(thumbnail_path), script, storyboard, metadata
+        project = Path(result["project_dir"])
+        video_path = result.get("video_path")
+        zip_path = result.get("zip_path")
+        thumbnail_path = project / "thumbnails" / "thumbnail.jpg"
+        script = read_text(project / "script.txt")
+        storyboard = read_text(project / "storyboard.md")
+        metadata = read_text(project / "metadata.json", json.dumps(result.get("metadata", {}), indent=2))
+        status = (
+            f"Generated `{result['style']}` video for `{platform}`.\n\n"
+            f"Video: `{video_path}`\n\n"
+            f"Zip: `{zip_path}`"
+        )
+        return status, video_path, zip_path, str(thumbnail_path), script, storyboard, metadata
+    except gr.Error:
+        raise
+    except Exception as exc:
+        raise gr.Error(f"Generation failed: {type(exc).__name__}: {exc}") from exc
 
 
 CSS = """
