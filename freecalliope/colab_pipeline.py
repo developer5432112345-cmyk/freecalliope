@@ -47,6 +47,17 @@ STYLE_PRESETS = {
         ],
         "poses": ["neutral", "talking", "shocked", "angry", "sad", "run", "point_left"],
     },
+    "ink_explainer": {
+        "label": "Ink Explainer",
+        "backgrounds": [
+            "hand drawn black ink explainer scene on warm white paper, simple diagram layout, empty center space",
+            "black ink line art whiteboard scene with arrows, boxes, and simple symbols, no readable text",
+            "minimal hand drawn city and people diagram in black ink on off white paper, explainer video style",
+            "sketchbook style hand drawn map and timeline layout, black ink, clean educational animation background",
+            "simple black ink office desk and chart illustration on white paper, faceless explainer style, no readable text",
+        ],
+        "poses": ["neutral", "talking", "point_right", "thinking", "happy"],
+    },
     "general": {
         "label": "General Faceless",
         "backgrounds": [
@@ -139,6 +150,8 @@ def resolve_style(topic: str, style: str) -> str:
         return "scary_story"
     if any(word in value for word in ["history", "war", "ancient", "empire", "king", "queen", "civilization"]):
         return "history"
+    if any(word in value for word in ["ink", "drawn", "sketch", "whiteboard", "diagram", "hand drawn"]):
+        return "ink_explainer"
     if any(word in value for word in ["story", "school", "friend", "kid", "animation", "stickman"]):
         return "stickman_story"
     if any(word in value for word in ["documentary", "true story", "case", "rise and fall", "explained"]):

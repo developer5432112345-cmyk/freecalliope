@@ -39,6 +39,7 @@ The main target is Google Colab, so users do not need a strong computer.
 ## Styles
 
 - Auto Faceless
+- Ink Explainer
 - Finance Explainer
 - Stickman Story
 - Mini Documentary
