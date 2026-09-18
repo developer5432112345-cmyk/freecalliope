@@ -320,6 +320,10 @@ def generate_backgrounds(
 ) -> None:
     import torch
 
+    width = int(width)
+    height = int(height)
+    steps = int(steps)
+    seed = int(seed)
     try:
         pipe, device = load_diffusion_pipeline(model_id)
     except Exception as exc:
@@ -377,6 +381,33 @@ def gtts_voice(text: str, out_path: Path) -> None:
     from gtts import gTTS
 
     gTTS(text=text, lang="en").save(str(out_path))
+
+
+def create_voice(
+    text: str,
+    out_path: Path,
+    voice_provider: str,
+    edge_voice: str,
+    omnivoice_audio_path: str | None,
+) -> Path:
+    if voice_provider == "omnivoice":
+        if not omnivoice_audio_path:
+            raise ValueError("voice_provider='omnivoice' needs omnivoice_audio_path pointing to an OmniVoice WAV or MP3.")
+        source_audio = Path(omnivoice_audio_path)
+        if not source_audio.exists():
+            raise FileNotFoundError(f"OmniVoice audio was not found: {source_audio}")
+        copied_audio = out_path.with_name(f"omnivoice{source_audio.suffix.lower()}")
+        shutil.copyfile(source_audio, copied_audio)
+        return normalize_audio_for_ffmpeg(copied_audio, out_path)
+    if voice_provider == "gtts":
+        gtts_voice(text, out_path)
+        return out_path
+    try:
+        run_async_blocking(edge_tts(text, out_path, edge_voice))
+    except Exception as exc:
+        print(f"Edge TTS failed, falling back to gTTS: {exc}")
+        gtts_voice(text, out_path)
+    return out_path
 
 
 def write_srt(scenes: list[Scene], output_path: Path) -> None:
@@ -551,7 +582,7 @@ def draw_wrapped_text(
 def normalize_audio_for_ffmpeg(audio_path: Path, out_path: Path) -> Path:
     if audio_path.suffix.lower() == ".mp3":
         return audio_path
-    subprocess.run(
+    run_ffmpeg(
         [
             "ffmpeg",
             "-y",
@@ -564,9 +595,15 @@ def normalize_audio_for_ffmpeg(audio_path: Path, out_path: Path) -> Path:
             "2",
             str(out_path),
         ],
-        check=True,
     )
     return out_path
+
+
+def run_ffmpeg(command: list[str]) -> None:
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0:
+        message = result.stderr.strip() or result.stdout.strip() or "Unknown FFmpeg error."
+        raise RuntimeError(message[-2000:])
 
 
 def render_video(
@@ -579,6 +616,11 @@ def render_video(
 ) -> Path:
     from PIL import Image, ImageDraw, ImageFont
 
+    if not scenes:
+        raise ValueError("Cannot render a video with zero scenes.")
+    width = int(width)
+    height = int(height)
+    fps = int(fps)
     videos = project / "videos"
     frames = project / "frames"
     videos.mkdir(parents=True, exist_ok=True)
@@ -650,7 +692,7 @@ def render_video(
             transition_filter = ",fade=t=in:st=0:d=0.08"
         elif scene.transition == "crossfade":
             transition_filter = ",fade=t=in:st=0:d=0.18"
-        subprocess.run(
+        run_ffmpeg(
             [
                 "ffmpeg",
                 "-y",
@@ -663,8 +705,7 @@ def render_video(
                 "-t",
                 str(scene.duration),
                 str(clip_path),
-            ],
-            check=True,
+            ]
         )
         clip_paths.append(clip_path)
         concat_lines.append(f"file '{clip_path.as_posix()}'")
@@ -674,7 +715,7 @@ def render_video(
 
     silent_video = videos / "silent.mp4"
     final_video = videos / "final.mp4"
-    subprocess.run(
+    run_ffmpeg(
         [
             "ffmpeg",
             "-y",
@@ -687,10 +728,9 @@ def render_video(
             "-c",
             "copy",
             str(silent_video),
-        ],
-        check=True,
+        ]
     )
-    subprocess.run(
+    run_ffmpeg(
         [
             "ffmpeg",
             "-y",
@@ -704,9 +744,10 @@ def render_video(
             "aac",
             "-shortest",
             str(final_video),
-        ],
-        check=True,
+        ]
     )
+    if not final_video.exists() or final_video.stat().st_size == 0:
+        raise RuntimeError("FFmpeg did not create a valid final video.")
     return final_video
 
 
@@ -737,6 +778,12 @@ def run_pipeline(
     platform: str = "youtube",
     generation_mode: str = "flow_fast",
 ) -> dict:
+    minutes = float(minutes)
+    scene_count = max(1, int(scene_count))
+    width = int(width)
+    height = int(height)
+    steps = max(1, int(steps))
+    seed = int(seed)
     output_root_path = Path(output_root)
     output_root_path.mkdir(parents=True, exist_ok=True)
     project_name = f"{time.strftime('%Y%m%d-%H%M%S')}-{slugify(topic)}"
@@ -761,19 +808,7 @@ def run_pipeline(
 
     narration_text = " ".join(scene.narration for scene in scenes)
     voice_path = voices / "narration.mp3"
-    if voice_provider == "omnivoice":
-        if not omnivoice_audio_path:
-            raise ValueError("voice_provider='omnivoice' needs omnivoice_audio_path pointing to an OmniVoice WAV or MP3.")
-        source_audio = Path(omnivoice_audio_path)
-        if not source_audio.exists():
-            raise FileNotFoundError(f"OmniVoice audio was not found: {source_audio}")
-        copied_audio = voices / f"omnivoice{source_audio.suffix.lower()}"
-        shutil.copyfile(source_audio, copied_audio)
-        voice_path = normalize_audio_for_ffmpeg(copied_audio, voices / "narration.mp3")
-    elif voice_provider == "gtts":
-        gtts_voice(narration_text, voice_path)
-    else:
-        run_async_blocking(edge_tts(narration_text, voice_path, edge_voice))
+    voice_path = create_voice(narration_text, voice_path, voice_provider, edge_voice, omnivoice_audio_path)
 
     write_srt(scenes, captions / "captions.srt")
     write_storyboard(scenes, project / "storyboard.md")

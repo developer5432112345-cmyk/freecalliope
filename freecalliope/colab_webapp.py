@@ -44,6 +44,15 @@ def read_text(path: Path, fallback: str = "") -> str:
     return fallback
 
 
+def existing_file(path: str | Path | None) -> str | None:
+    if not path:
+        return None
+    file_path = Path(path)
+    if file_path.exists() and file_path.stat().st_size > 0:
+        return str(file_path)
+    return None
+
+
 def generate_video(
     topic: str,
     style: str,
@@ -71,13 +80,13 @@ def generate_video(
             style=style,
             platform=platform,
             generation_mode=generation_mode,
-            minutes=minutes,
-            scene_count=scene_count,
+            minutes=float(minutes),
+            scene_count=int(scene_count),
             gemini_key=gemini_api_key or None,
             image_model=image_model,
             width=width,
             height=height,
-            steps=steps,
+            steps=int(steps),
             guidance_scale=0.0,
             voice_provider=voice_provider,
             edge_voice=edge_voice,
@@ -85,8 +94,8 @@ def generate_video(
         )
 
         project = Path(result["project_dir"])
-        video_path = result.get("video_path")
-        zip_path = result.get("zip_path")
+        video_path = existing_file(result.get("video_path"))
+        zip_path = existing_file(result.get("zip_path"))
         thumbnail_path = project / "thumbnails" / "thumbnail.jpg"
         script = read_text(project / "script.txt")
         storyboard = read_text(project / "storyboard.md")
@@ -96,7 +105,7 @@ def generate_video(
             f"Video: `{video_path}`\n\n"
             f"Zip: `{zip_path}`"
         )
-        return status, video_path, zip_path, str(thumbnail_path), script, storyboard, metadata
+        return status, video_path, zip_path, existing_file(thumbnail_path), script, storyboard, metadata
     except gr.Error:
         raise
     except Exception as exc:
