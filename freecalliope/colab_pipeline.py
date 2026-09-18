@@ -50,11 +50,11 @@ STYLE_PRESETS = {
     "ink_explainer": {
         "label": "Ink Explainer",
         "backgrounds": [
-            "hand drawn black ink explainer scene on warm white paper, simple diagram layout, empty center space",
-            "black ink line art whiteboard scene with arrows, boxes, and simple symbols, no readable text",
-            "minimal hand drawn city and people diagram in black ink on off white paper, explainer video style",
-            "sketchbook style hand drawn map and timeline layout, black ink, clean educational animation background",
-            "simple black ink office desk and chart illustration on white paper, faceless explainer style, no readable text",
+            "hand drawn black ink ancient human survival scene on warm white paper, simple stick figures, cave, fire, tools, no readable text",
+            "black ink line art prehistoric camp diagram with arrows, animals, footprints, and simple symbols, off white paper, no readable text",
+            "minimal hand drawn ancient humans hunting and gathering scene, black ink on parchment white background, educational explainer style",
+            "sketchbook style map and timeline of early human migration, black ink, simple icons, clean explainer background, no readable text",
+            "simple black ink comparison of modern life and ancient human life, split scene, stick figures, no readable text",
         ],
         "poses": ["neutral", "talking", "point_right", "thinking", "happy"],
     },
@@ -148,10 +148,10 @@ def resolve_style(topic: str, style: str) -> str:
         return "finance"
     if any(word in value for word in ["scary", "horror", "creepy", "haunted", "mystery", "disturbing"]):
         return "scary_story"
+    if any(word in value for word in ["ink", "drawn", "sketch", "whiteboard", "diagram", "hand drawn", "ancient human", "early human", "prehistoric", "neanderthal", "caveman", "hunter gatherer"]):
+        return "ink_explainer"
     if any(word in value for word in ["history", "war", "ancient", "empire", "king", "queen", "civilization"]):
         return "history"
-    if any(word in value for word in ["ink", "drawn", "sketch", "whiteboard", "diagram", "hand drawn"]):
-        return "ink_explainer"
     if any(word in value for word in ["story", "school", "friend", "kid", "animation", "stickman"]):
         return "stickman_story"
     if any(word in value for word in ["documentary", "true story", "case", "rise and fall", "explained"]):
@@ -177,6 +177,14 @@ def template_script(topic: str, style: str) -> str:
             "Every choice made the situation worse. "
             "Finally, he noticed one tiny detail everyone else missed. "
             "That detail changed everything."
+        )
+    if style == "ink_explainer":
+        return (
+            f"This morning, something ordinary reminded you of {topic}. "
+            "Now rewind thousands of years, before alarms, cities, and schedules existed. "
+            "For ancient humans, the same problem looked completely different. "
+            "Every choice was connected to food, danger, weather, family, and survival. "
+            "The strange part is that many of their solutions still shape how we live today."
         )
     if style == "documentary":
         return (

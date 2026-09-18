@@ -49,6 +49,8 @@ The main target is Google Colab, so users do not need a strong computer.
 
 Use `STYLE = "auto"` when you want the tool to choose the best faceless format from the topic.
 
+Use `STYLE = "ink_explainer"` for ancient-human, prehistoric survival, science-history, and curiosity videos inspired by Ink Explainer-style channels.
+
 ## Platforms
 
 - `youtube`: 16:9 long-form videos

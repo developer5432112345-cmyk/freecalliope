@@ -5,6 +5,7 @@ __pycache__/
 env/
 
 # Local generated output
+tmp/
 outputs/
 projects/
 backgrounds/
