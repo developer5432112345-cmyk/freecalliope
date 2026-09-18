@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import subprocess
+import threading
 import time
 import zipfile
 from dataclasses import asdict, dataclass
@@ -348,6 +349,28 @@ async def edge_tts(text: str, out_path: Path, voice: str) -> None:
 
     communicate = edge_tts.Communicate(text, voice)
     await communicate.save(str(out_path))
+
+
+def run_async_blocking(coro) -> None:
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        asyncio.run(coro)
+        return
+
+    error: list[BaseException] = []
+
+    def runner() -> None:
+        try:
+            asyncio.run(coro)
+        except BaseException as exc:
+            error.append(exc)
+
+    thread = threading.Thread(target=runner)
+    thread.start()
+    thread.join()
+    if error:
+        raise error[0]
 
 
 def gtts_voice(text: str, out_path: Path) -> None:
@@ -750,7 +773,7 @@ def run_pipeline(
     elif voice_provider == "gtts":
         gtts_voice(narration_text, voice_path)
     else:
-        asyncio.run(edge_tts(narration_text, voice_path, edge_voice))
+        run_async_blocking(edge_tts(narration_text, voice_path, edge_voice))
 
     write_srt(scenes, captions / "captions.srt")
     write_storyboard(scenes, project / "storyboard.md")
