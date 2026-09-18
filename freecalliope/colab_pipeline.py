@@ -14,6 +14,17 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 STYLE_PRESETS = {
+    "auto": {
+        "label": "Auto Faceless",
+        "backgrounds": [
+            "clean cartoon explainer studio background, empty center space, bright professional animation style",
+            "simple modern animated room background, clean faceless YouTube style, empty foreground",
+            "cartoon whiteboard presentation background, clear composition, no text",
+            "cartoon city and workspace montage background, polished explainer video style",
+            "simple cinematic animated background for a faceless YouTube video, empty center space",
+        ],
+        "poses": ["neutral", "talking", "point_right", "thinking", "happy"],
+    },
     "finance": {
         "label": "Finance Explainer",
         "backgrounds": [
@@ -116,6 +127,23 @@ def slugify(value: str) -> str:
 
 def split_sentences(text: str) -> list[str]:
     return [p.strip() for p in re.split(r"(?<=[.!?])\s+", text.strip()) if p.strip()]
+
+
+def resolve_style(topic: str, style: str) -> str:
+    if style != "auto":
+        return style
+    value = topic.lower()
+    if any(word in value for word in ["money", "invest", "stock", "budget", "finance", "rich", "broke", "income"]):
+        return "finance"
+    if any(word in value for word in ["scary", "horror", "creepy", "haunted", "mystery", "disturbing"]):
+        return "scary_story"
+    if any(word in value for word in ["history", "war", "ancient", "empire", "king", "queen", "civilization"]):
+        return "history"
+    if any(word in value for word in ["story", "school", "friend", "kid", "animation", "stickman"]):
+        return "stickman_story"
+    if any(word in value for word in ["documentary", "true story", "case", "rise and fall", "explained"]):
+        return "documentary"
+    return "general"
 
 
 def template_script(topic: str, style: str) -> str:
@@ -647,7 +675,7 @@ def zip_dir(source: Path, zip_path: Path) -> None:
 
 def run_pipeline(
     topic: str,
-    style: str = "finance",
+    style: str = "auto",
     minutes: float = 3.0,
     scene_count: int = 12,
     output_root: str = "outputs",
@@ -681,8 +709,10 @@ def run_pipeline(
         preset = FORMAT_PRESETS[platform]
         width = int(preset["width"])
         height = int(preset["height"])
-    script = gemini_script(topic, style, minutes, gemini_key) or template_script(topic, style)
-    scenes = build_scenes(topic, style, scene_count, minutes, script, generation_mode)
+    requested_style = style
+    resolved_style = resolve_style(topic, style)
+    script = gemini_script(topic, resolved_style, minutes, gemini_key) or template_script(topic, resolved_style)
+    scenes = build_scenes(topic, resolved_style, scene_count, minutes, script, generation_mode)
     generate_backgrounds(scenes, backgrounds, image_model, width, height, guidance_scale, steps, seed)
 
     narration_text = " ".join(scene.narration for scene in scenes)
@@ -710,11 +740,12 @@ def run_pipeline(
     if make_video:
         video_path = render_video(project, scenes, voice_path, width, height)
     (project / "script.txt").write_text(script, encoding="utf-8")
-    metadata = build_metadata(topic, style, platform, script)
+    metadata = build_metadata(topic, resolved_style, platform, script)
     (project / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     manifest = {
         "topic": topic,
-        "style": style,
+        "style": resolved_style,
+        "requested_style": requested_style,
         "platform": platform,
         "generation_mode": generation_mode,
         "minutes": minutes,
@@ -743,7 +774,7 @@ def run_pipeline(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--topic", required=True)
-    parser.add_argument("--style", default="finance", choices=STYLE_PRESETS.keys())
+    parser.add_argument("--style", default="auto", choices=STYLE_PRESETS.keys())
     parser.add_argument("--platform", default="youtube", choices=FORMAT_PRESETS.keys())
     parser.add_argument("--generation-mode", default="flow_fast", choices=["flow_fast", "classic_fast"])
     parser.add_argument("--minutes", type=float, default=3.0)

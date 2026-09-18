@@ -38,12 +38,15 @@ The main target is Google Colab, so users do not need a strong computer.
 
 ## Styles
 
+- Auto Faceless
 - Finance Explainer
 - Stickman Story
 - Mini Documentary
 - History Explainer
 - Scary Story
 - General Faceless
+
+Use `STYLE = "auto"` when you want the tool to choose the best faceless format from the topic.
 
 ## Platforms
 
