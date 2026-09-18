@@ -1,6 +1,6 @@
 # FreeCalliope
 
-FreeCalliope is a free, Colab-first faceless animation project generator inspired by CalliopeLabs-style workflows.
+FreeCalliope is a free, Colab-first faceless animation studio inspired by CalliopeLabs-style and Google Flow-style workflows.
 
 It turns a topic into a video project pack:
 
@@ -30,11 +30,11 @@ The main target is Google Colab, so users do not need a strong computer.
 
 2. In Colab, run the setup cell.
 
-3. Use the notebook UI to choose a topic, style, platform, length, scene count, model, and voice.
+3. Run the launch cell to open the website-style Gradio studio.
 
-4. Click `Generate Video`.
+4. Use the website screen to choose a topic, style, platform, length, scene count, model, and voice.
 
-5. Download the finished MP4 and the zip from `outputs/`.
+5. Click `Generate Video`, then download the finished MP4 and project zip from the web UI.
 
 ## Styles
 
@@ -128,6 +128,7 @@ START_HERE.md
 ```text
 freecalliope/
   colab_pipeline.py      # Colab-first generator
+  colab_webapp.py        # Gradio website UI for Colab
   app.py                 # Local web app
   static/                # Local web UI
 notebooks/

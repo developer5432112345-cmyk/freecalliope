@@ -7,3 +7,4 @@ edge-tts
 gTTS
 Pillow
 ipywidgets
+gradio
