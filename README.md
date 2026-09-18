@@ -30,9 +30,9 @@ The main target is Google Colab, so users do not need a strong computer.
 
 2. In Colab, run the setup cell.
 
-3. Enter a topic, style, platform, number of scenes, and voice.
+3. Use the notebook UI to choose a topic, style, platform, length, scene count, model, and voice.
 
-4. Run generation.
+4. Click `Generate Video`.
 
 5. Download the finished MP4 and the zip from `outputs/`.
 

@@ -6,3 +6,4 @@ torch
 edge-tts
 gTTS
 Pillow
+ipywidgets
