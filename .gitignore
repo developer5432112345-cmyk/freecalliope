@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# Local generated output
+outputs/
+projects/
+backgrounds/
+voices/*.wav
+voices/*.mp3
+freecalliope_*_response.json
+test_generate_response.json
+
+# Local installed tools/models
+fastsdcpu/
+piper-env/
+voices/piper-models/
+
+# Secrets
+.env
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

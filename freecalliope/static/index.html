@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FreeCalliope</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>FreeCalliope</h1>
+          <p>CPU-first faceless animation project generator</p>
+        </div>
+        <div class="status" id="status">Checking tools...</div>
+      </header>
+
+      <section class="workspace">
+        <form id="create-form" class="panel">
+          <label>
+            Video topic
+            <textarea name="topic" rows="3" required>Why most people stay broke even when they make more money</textarea>
+          </label>
+
+          <div class="grid">
+            <label>
+              Style
+              <select name="style">
+                <option value="finance">Finance Explainer</option>
+                <option value="stickman_story">Stickman Story</option>
+                <option value="general">General Faceless</option>
+              </select>
+            </label>
+            <label>
+              Mode
+              <select name="mode">
+                <option value="fast">Fast template mode</option>
+                <option value="regular">Regular scene mode</option>
+              </select>
+            </label>
+            <label>
+              Script planner
+              <select name="planner">
+                <option value="local">Local template</option>
+                <option value="gemini">Gemini free key</option>
+              </select>
+            </label>
+            <label>
+              Voice provider
+              <select name="voice_provider">
+                <option value="piper">Piper local</option>
+                <option value="edge">Edge voices</option>
+                <option value="omnivoice">OmniVoice external</option>
+              </select>
+            </label>
+            <label>
+              Minutes
+              <input name="minutes" type="number" min="0.5" max="20" step="0.5" value="3" />
+            </label>
+            <label>
+              Scenes
+              <input name="scene_count" type="number" min="1" max="200" value="8" />
+            </label>
+          </div>
+
+          <details>
+            <summary>Advanced</summary>
+            <div class="grid">
+              <label>
+                Width
+                <input name="width" type="number" min="256" max="1024" step="64" value="512" />
+              </label>
+              <label>
+                Height
+                <input name="height" type="number" min="256" max="1024" step="64" value="512" />
+              </label>
+              <label class="check">
+                <input name="generate_backgrounds" type="checkbox" checked />
+                Generate backgrounds
+              </label>
+              <label class="check">
+                <input name="generate_narration" type="checkbox" checked />
+                Generate narration
+              </label>
+              <label class="check">
+                <input name="openvino" type="checkbox" />
+                Try OpenVINO
+              </label>
+              <label>
+                Edge voice
+                <select name="voice">
+                  <option value="en-US-AriaNeural">Aria - US female</option>
+                  <option value="en-US-GuyNeural">Guy - US male</option>
+                  <option value="en-US-JennyNeural">Jenny - US female</option>
+                  <option value="en-GB-RyanNeural">Ryan - UK male</option>
+                  <option value="en-GB-SoniaNeural">Sonia - UK female</option>
+                </select>
+              </label>
+            </div>
+            <label>
+              Optional custom script
+              <textarea name="script" rows="5" placeholder="Leave blank to auto-generate a simple starter script."></textarea>
+            </label>
+          </details>
+
+          <button type="submit" id="create-button">Create Project Pack</button>
+        </form>
+
+        <section class="panel output">
+          <h2>Output</h2>
+          <pre id="log">Ready.</pre>
+        </section>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

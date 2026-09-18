@@ -1,0 +1,4 @@
+# One prompt per line. Keep these simple for CPU generation.
+simple cartoon classroom background, empty room, clean lines, stickman animation style, bright colors
+simple cartoon school hallway background, lockers on both sides, clean lines, stickman animation style
+simple cartoon bedroom background, desk and bed, empty center space, clean lines, stickman animation style
